@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech - OCBC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f9fafb;
+            min-height: 100vh;
+            color: #374151;
+        }
+
+        /* Header */
+        .header {
+            padding: 1.5rem;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #2563eb;
+        }
+
+        .header-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .header-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .ocbc-logo {
+            height: 2rem;
+            width: auto;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: #e8f0f4;
+            margin: 0 1.5rem;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hero-text {
+            flex: 1;
+            max-width: 28rem;
+        }
+
+        .hero-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            color: #6b7280;
+            font-size: 1.125rem;
+            line-height: 1.75;
+        }
+
+        .hero-image {
+            flex-shrink: 0;
+            margin-left: 2rem;
+        }
+
+        .microphone-img {
+            width: 16rem;
+            height: 12rem;
+            object-fit: contain;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 32rem;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .content-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .content-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-subtitle {
+            color: #6b7280;
+        }
+
+        /* Form Styles */
+        .form-section {
+            display: block;
+        }
+
+        .form-section.hidden {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-select, .form-textarea {
+            width: 100%;
+            height: 3rem;
+            padding: 0.75rem 1rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            height: 8rem;
+            resize: none;
+            line-height: 1.5;
+        }
+
+        .voice-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .voice-select {
+            flex: 1;
+        }
+
+        .play-sample-btn {
+            height: 3rem;
+            padding: 0 1rem;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .play-sample-btn:hover {
+            background: #f9fafb;
+        }
+
+        .generate-btn {
+            width: 100%;
+            background: #38bdf8;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .generate-btn:hover {
+            background: #0ea5e9;
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Result Section */
+        .result-section {
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .audio-card {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .audio-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .audio-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .download-btn {
+            background: #38bdf8;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .download-btn:hover {
+            background: #0ea5e9;
+        }
+
+        .regenerate-btn {
+            background: transparent;
+            color: #0ea5e9;
+            border: 1px solid #38bdf8;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .regenerate-btn:hover {
+            background: #eff6ff;
+        }
+
+        /* Audio Player */
+        .audio-player {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .play-btn {
+            background: #38bdf8;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease;
+        }
+
+        .play-btn:hover {
+            background: #0ea5e9;
+        }
+
+        .waveform {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.125rem;
+            height: 3rem;
+        }
+
+        .waveform-bar {
+            width: 0.125rem;
+            background: #38bdf8;
+            border-radius: 0.125rem;
+            transition: all 0.15s ease;
+            opacity: 0.6;
+        }
+
+        .waveform-bar.active {
+            opacity: 1;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error Messages */
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Status Section */
+        .status-section {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+            display: none;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .status-section.show {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-image {
+                margin: 1.5rem 0 0 0;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .main-content {
+                padding: 0 1rem;
+            }
+
+            .voice-group {
+                flex-direction: column;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-brand">
+                <svg class="header-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z" />
+                </svg>
+                <span class="header-title">Text to Speech</span>
+            </div>
+            <div>
+                <!-- OCBC Logo -->
+                <img src="public/ocbc-icon.png" alt="OCBC" class="ocbc-logo" />
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">Text to Speech</h1>
+                <p class="hero-subtitle">Choose from various models and voices to generate speech from text.</p>
+            </div>
+            <div class="hero-image">
+                <!-- Professional microphone image -->
+                <img src="public/rl.png" alt="Professional microphone" class="microphone-img" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Form Section -->
+        <div id="formSection" class="form-section">
+            <div class="content-header">
+                <h2 class="content-title">Generate Speech</h2>
+                <p class="content-subtitle">Choose a model, voice, and style to turn text into natural speech.</p>
+            </div>
+
+            <form id="ttsForm">
+                <!-- Voice ID -->
+                <div class="form-group">
+                    <label for="voice_id" class="form-label">Voice ID</label>
+                    <div class="voice-group">
+                        <select id="voice_id" name="voice_id" class="form-select voice-select">
+                            <option value="Cantonese_people_male_02">Cantonese Man</option>
+                            <option value="HK_Cantonese_female1">Cantonese Lady</option>
+                            <option value="Chinese (Mandarin)_Reliable_Executive">Chinese (Mandarin) Man</option>
+                            <option value="Chinese (Mandarin)_News_Anchor">Chinese (Mandarin) Lady</option>
+                            <option value="English_Trustworthy_Man">English Man</option>
+                            <option value="English_Graceful_Lady">English Lady</option>
+                        </select>
+                        <button type="button" class="play-sample-btn" onclick="playSample()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                            Play Sample
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Speed -->
+                <div class="form-group">
+                    <label for="speed" class="form-label">Speed</label>
+                    <select id="speed" name="speed" class="form-select">
+                        <option value="0.5">0.5</option>
+                        <option value="0.75">0.75</option>
+                        <option value="1.0" selected>1.0</option>
+                        <option value="1.25">1.25</option>
+                        <option value="1.5">1.5</option>
+                        <option value="2.0">2.0</option>
+                    </select>
+                </div>
+
+                <!-- Text Input -->
+                <div class="form-group">
+                    <label for="text" class="form-label">Your Text</label>
+                    <textarea
+                        id="text"
+                        name="text"
+                        class="form-textarea"
+                        placeholder="Type your text here. E.g., Hello and Welcome to our demo!"
+                    >Hello and Welcome to our demo!</textarea>
+                </div>
+
+                <!-- Hidden fields -->
+                <input type="hidden" id="model" value="speech-02-hd">
+                <input type="hidden" id="emotion" value="happy">
+                <input type="hidden" id="language_boost" value="auto">
+
+                <button type="button" class="generate-btn" onclick="generateSpeech()">
+                    Generate
+                </button>
+            </form>
+
+            <!-- Loading -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Generating your speech...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="error-message"></div>
+
+            <!-- Status Section -->
+            <div id="statusSection" class="status-section">
+                <p id="statusCode"></p>
+                <p id="traceId"></p>
+                <p id="responseContent"></p>
+            </div>
+        </div>
+
+        <!-- Result Section -->
+        <div id="resultSection" class="result-section">
+            <div class="content-header">
+                <h2 class="content-title">Your audio is ready!</h2>
+                <p class="content-subtitle">Preview, download, regenerate.</p>
+            </div>
+
+            <div class="audio-card">
+                <div class="audio-header">
+                    <span class="audio-label">Audio</span>
+                    <div class="action-buttons">
+                        <a href="#" id="downloadLink" class="download-btn" download>Download</a>
+                        <button type="button" class="regenerate-btn" onclick="regenerateAudio()">Regenerate</button>
+                    </div>
+                </div>
+
+                <div class="audio-player">
+                    <button class="play-btn" onclick="toggleAudio()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                    <div class="waveform" id="waveform">
+                        <!-- Waveform bars will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Voice ID to Language Boost mapping
+        const voiceLanguageMap = {
+            'HK_Cantonese_female1': 'Chinese,Yue',
+            'Cantonese_people_male_02': 'Chinese,Yue',
+            'Chinese (Mandarin)_Reliable_Executive': 'Chinese',
+            'Chinese (Mandarin)_News_Anchor': 'Chinese',
+            'English_Trustworthy_Man': 'English',
+            'English_Graceful_Lady': 'English',
+            'Spanish_Female_ES': 'Spanish'
+        };
+
+        let currentAudio = null;
+        let isPlaying = false;
+        let waveformInterval = null;
+
+        // Language detection function
+        function detectLanguage(text) {
+            // Check for Chinese characters (including simplified and traditional)
+            const chineseRegex = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/;
+            return chineseRegex.test(text) ? 'chinese' : 'english';
+        }
+
+        // Translation function using Google Translate API
+        async function translateText(text, targetLanguage) {
+            try {
+                // Use Google Translate API (free tier)
+                const sourceLanguage = detectLanguage(text) === 'chinese' ? 'zh' : 'en';
+                const targetLang = targetLanguage === 'chinese' ? 'zh' : 'en';
+                
+                // If source and target are the same, no translation needed
+                if (sourceLanguage === targetLang) {
+                    return text;
+                }
+
+                const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLanguage}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
+                const data = await response.json();
+                
+                if (data && data[0] && data[0][0] && data[0][0][0]) {
+                    return data[0][0][0];
+                }
+                
+                // Fallback: return original text if translation fails
+                return text;
+            } catch (error) {
+                console.error('Translation error:', error);
+                // Return original text if translation fails
+                return text;
+            }
+        }
+
+        // Check if voice and text language mismatch requires translation
+        function needsTranslation(text, voiceId) {
+            const textLanguage = detectLanguage(text);
+            const isEnglishVoice = voiceId.includes('English');
+            const isChineseVoice = voiceId.includes('Cantonese') || voiceId.includes('Mandarin');
+            
+            // Need translation if:
+            // 1. Chinese text with English voice
+            // 2. English text with Chinese voice
+            return (textLanguage === 'chinese' && isEnglishVoice) ||
+                   (textLanguage === 'english' && isChineseVoice);
+        }
+
+        // Initialize waveform
+        function initializeWaveform() {
+            const waveform = document.getElementById('waveform');
+            waveform.innerHTML = '';
+            
+            for (let i = 0; i < 50; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'waveform-bar';
+                bar.style.height = `${Math.random() * 24 + 8}px`;
+                waveform.appendChild(bar);
+            }
+        }
+
+        // Auto-update language boost when voice changes
+        document.getElementById('voice_id').addEventListener('change', function() {
+            const selectedVoice = this.value;
+            const languageBoost = voiceLanguageMap[selectedVoice] || 'auto';
+            document.getElementById('language_boost').value = languageBoost;
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWaveform();
+            
+            const initialVoice = document.getElementById('voice_id').value;
+            const initialLanguageBoost = voiceLanguageMap[initialVoice] || 'auto';
+            document.getElementById('language_boost').value = initialLanguageBoost;
+        });
+
+        async function playSample() {
+            const voice_id = document.getElementById('voice_id').value;
+            const speed = parseFloat(document.getElementById('speed').value);
+            
+            // Define sample text based on voice language
+            let sampleText = '';
+            if (voice_id.includes('Cantonese')) {
+                sampleText = '您好'; // Cantonese sample
+            } else if (voice_id.includes('Mandarin')) {
+                sampleText = '您好'; // Mandarin sample
+            } else if (voice_id.includes('English')) {
+                sampleText = 'hello'; // English sample
+            } else {
+                sampleText = 'hello'; // Default English
+            }
+
+            const group_id = '1942475203674116903';
+            const api_key = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiJEIEQiLCJVc2VyTmFtZSI6IkQgRCIsIkFjY291bnQiOiIiLCJTdWJqZWN0SUQiOiIxOTQyNDc1MjAzNjc4MzExMjA3IiwiUGhvbmUiOiIiLCJHcm91cElEIjoiMTk0MjQ3NTIwMzY3NDExNjkwMyIsIlBhZ2VOYW1lIjoiIiwiTWFpbCI6Imlubm92YXRpb24yMDIyMDZAZ21haWwuY29tIiwiQ3JlYXRlVGltZSI6IjIwMjUtMDctMjMgMTU6MDE6NDIiLCJUb2tlblR5cGUiOjEsImlzcyI6Im1pbmltYXgifQ.GvEHiYOKSYtw7ASh923DBeK1jhiXrTf_ZHpbh_XS7FdiaQBiLbUJ8SXWlW3jvUTASyU3fA8mBaF9Xqf8Uon0yzwm0-uG2kU9sPaL22sPJ2HMlcskTwXN3c-dYtBQSL7XwHUyFliM5mDw6cwBEbuiEio_MLde4eLNBGUATNMMorb2kBIPu3K5Qcsrl5ZWNx03lS0LmdirHDdJmc0ZonWD7eyQTLXvIFtTeY1BMZmny65vFtQH8WoCf26U0iJ73JgqKrqcWrkhad4TSJ2ZdLegfHWme_X1K3pnAbFvmAPMhv_yi0vTXxH_n8Y4-Dy4wORPj1PXr9H5_bHwV9iqnW5tYA';
+
+            const model = document.getElementById('model').value;
+            const emotion = document.getElementById('emotion').value;
+            const language_boost = voiceLanguageMap[voice_id] || 'auto';
+
+            try {
+                const url = `https://api.minimaxi.chat/v1/t2a_v2?GroupId=${group_id}`;
+                const payload = {
+                    "model": model,
+                    "text": sampleText,
+                    "stream": false,
+                    "voice_setting": {
+                        "voice_id": voice_id,
+                        "speed": speed,
+                        "vol": 1,
+                        "pitch": 0
+                    },
+                    "audio_setting": {
+                        "sample_rate": 32000,
+                        "format": "mp3",
+                        "channel": 1
+                    }
+                };
+
+                if (emotion) {
+                    payload.voice_setting.emotion = emotion;
+                }
+
+                if (language_boost && language_boost !== 'auto') {
+                    payload.language_boost = language_boost;
+                }
+
+                const headers = {
+                    'Authorization': `Bearer ${api_key}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data && data.data && data.data.audio) {
+                    const audioValue = data.data.audio;
+                    const audioBlob = new Blob([new Uint8Array(audioValue.match(/[\da-f]{2}/gi).map(function (h) {
+                        return parseInt(h, 16);
+                    }))], { type: 'audio/mp3' });
+
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const sampleAudio = new Audio(audioUrl);
+                    
+                    // Play the sample
+                    sampleAudio.play();
+                    
+                    // Clean up after playing
+                    sampleAudio.addEventListener('ended', function() {
+                        URL.revokeObjectURL(audioUrl);
+                    });
+
+                } else {
+                    showError('Failed to generate voice sample. Please try again.');
+                }
+            } catch (error) {
+                console.error('Sample generation error:', error);
+                showError('Error generating voice sample. Please check your connection and try again.');
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('resultSection').classList.remove('show');
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('statusSection').classList.remove('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+            hideLoading();
+        }
+
+        function showResult(audioUrl, filename) {
+            const downloadLink = document.getElementById('downloadLink');
+            downloadLink.href = audioUrl;
+            downloadLink.download = filename;
+            
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.add('show');
+            hideLoading();
+        }
+
+        function toggleAudio() {
+            const playBtn = document.querySelector('.play-btn');
+            const bars = document.querySelectorAll('.waveform-bar');
+            
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+                playBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                isPlaying = false;
+                clearInterval(waveformInterval);
+                bars.forEach(bar => bar.classList.remove('active'));
+            } else if (currentAudio) {
+                currentAudio.play();
+                playBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                isPlaying = true;
+                animateWaveform();
+            }
+        }
+
+        function animateWaveform() {
+            const bars = document.querySelectorAll('.waveform-bar');
+            let currentBar = 0;
+            
+            waveformInterval = setInterval(() => {
+                bars.forEach((bar, index) => {
+                    bar.classList.toggle('active', index <= currentBar);
+                });
+                
+                currentBar = (currentBar + 1) % bars.length;
+                
+                if (!isPlaying) {
+                    clearInterval(waveformInterval);
+                }
+            }, 100);
+        }
+
+        function regenerateAudio() {
+            document.getElementById('formSection').classList.remove('hidden');
+            document.getElementById('resultSection').classList.remove('show');
+        }
+
+        async function generateSpeech() {
+            const group_id = '1942475203674116903';
+            const api_key = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiJEIEQiLCJVc2VyTmFtZSI6IkQgRCIsIkFjY291bnQiOiIiLCJTdWJqZWN0SUQiOiIxOTQyNDc1MjAzNjc4MzExMjA3IiwiUGhvbmUiOiIiLCJHcm91cElEIjoiMTk0MjQ3NTIwMzY3NDExNjkwMyIsIlBhZ2VOYW1lIjoiIiwiTWFpbCI6Imlubm92YXRpb24yMDIyMDZAZ21haWwuY29tIiwiQ3JlYXRlVGltZSI6IjIwMjUtMDctMjMgMTU6MDE6NDIiLCJUb2tlblR5cGUiOjEsImlzcyI6Im1pbmltYXgifQ.GvEHiYOKSYtw7ASh923DBeK1jhiXrTf_ZHpbh_XS7FdiaQBiLbUJ8SXWlW3jvUTASyU3fA8mBaF9Xqf8Uon0yzwm0-uG2kU9sPaL22sPJ2HMlcskTwXN3c-dYtBQSL7XwHUyFliM5mDw6cwBEbuiEio_MLde4eLNBGUATNMMorb2kBIPu3K5Qcsrl5ZWNx03lS0LmdirHDdJmc0ZonWD7eyQTLXvIFtTeY1BMZmny65vFtQH8WoCf26U0iJ73JgqKrqcWrkhad4TSJ2ZdLegfHWme_X1K3pnAbFvmAPMhv_yi0vTXxH_n8Y4-Dy4wORPj1PXr9H5_bHwV9iqnW5tYA';
+            
+            const voice_id = document.getElementById('voice_id').value;
+            const model = document.getElementById('model').value;
+            const speed = parseFloat(document.getElementById('speed').value);
+            let text = document.getElementById('text').value.trim();
+            const emotion = document.getElementById('emotion').value;
+            const language_boost = document.getElementById('language_boost').value;
+
+            // Validation
+            if (!text) {
+                showError('Please enter some text to convert to speech.');
+                return;
+            }
+
+            showLoading();
+
+            // Check if translation is needed and translate if necessary
+            try {
+                if (needsTranslation(text, voice_id)) {
+                    const isEnglishVoice = voice_id.includes('English');
+                    const targetLanguage = isEnglishVoice ? 'english' : 'chinese';
+                    
+                    // Update loading message to show translation is happening
+                    document.querySelector('#loading p').textContent = 'Translating and generating your speech...';
+                    
+                    text = await translateText(text, targetLanguage);
+                    
+                    // Update loading message back to normal
+                    document.querySelector('#loading p').textContent = 'Generating your speech...';
+                }
+            } catch (error) {
+                console.error('Translation failed:', error);
+                // Continue with original text if translation fails
+            }
+
+            const url = `https://api.minimaxi.chat/v1/t2a_v2?GroupId=${group_id}`;
+            const payload = {
+                "model": model,
+                "text": text,
+                "stream": false,
+                "voice_setting": {
+                    "voice_id": voice_id,
+                    "speed": speed,
+                    "vol": 1,
+                    "pitch": 0
+                },
+                "audio_setting": {
+                    "sample_rate": 32000,
+                    "format": "mp3",
+                    "channel": 1
+                }
+            };
+
+            if (emotion) {
+                payload.voice_setting.emotion = emotion;
+            }
+
+            if (language_boost && language_boost !== 'auto') {
+                payload.language_boost = language_boost;
+            }
+
+            const headers = {
+                'Authorization': `Bearer ${api_key}`,
+                'Content-Type': 'application/json'
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                document.getElementById('statusCode').innerText = `Status code: ${response.status}`;
+                document.getElementById('traceId').innerText = `Trace-Id: ${response.headers.get('Trace-Id')}`;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.data && data.data.audio) {
+                    const audioValue = data.data.audio;
+                    const audioBlob = new Blob([new Uint8Array(audioValue.match(/[\da-f]{2}/gi).map(function (h) {
+                        return parseInt(h, 16);
+                    }))], { type: 'audio/mp3' });
+
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    // Create new audio element
+                    if (currentAudio) {
+                        currentAudio.pause();
+                        URL.revokeObjectURL(currentAudio.src);
+                    }
+                    
+                    currentAudio = new Audio(audioUrl);
+                    currentAudio.addEventListener('ended', function() {
+                        document.querySelector('.play-btn').innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+                        isPlaying = false;
+                        clearInterval(waveformInterval);
+                        const bars = document.querySelectorAll('.waveform-bar');
+                        bars.forEach(bar => bar.classList.remove('active'));
+                    });
+
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    const filename = `OCBC_TTS_${voice_id}_${emotion || "none"}_${timestamp}.mp3`;
+                    
+                    showResult(audioUrl, filename);
+                    document.getElementById('statusSection').classList.add('show');
+
+                } else {
+                    document.getElementById('responseContent').innerText = `Response: ${JSON.stringify(data)}`;
+                    document.getElementById('statusSection').classList.add('show');
+                    showError('Failed to generate audio. Please check the response details above.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError(`Error: ${error.message}`);
+                document.getElementById('statusSection').classList.add('show');
+            });
+        }
+    </script>
+</body>
+</html>
