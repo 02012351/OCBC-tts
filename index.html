@@ -612,21 +612,180 @@
                    (textLanguage === 'english' && isChineseVoice);
         }
 
+        // Convert number to English words
+        function numberToWords(num) {
+            if (num === 0) return 'Zero';
+            if (num < 0) return 'Negative ' + numberToWords(-num);
+
+            const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+                         'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+                         'seventeen', 'eighteen', 'nineteen'];
+            const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+            function convertThreeDigits(n) {
+                let result = '';
+                
+                // Handle hundreds
+                if (n >= 100) {
+                    result += ones[Math.floor(n / 100)] + ' hundred';
+                    n %= 100;
+                    if (n > 0) result += ' ';
+                }
+                
+                // Handle tens and ones
+                if (n >= 20) {
+                    result += tens[Math.floor(n / 10)];
+                    if (n % 10 > 0) {
+                        result += '-' + ones[n % 10];
+                    }
+                } else if (n > 0) {
+                    result += ones[n];
+                }
+                
+                return result;
+            }
+
+            let result = '';
+            const originalNum = num;
+            
+            // Handle billions
+            if (num >= 1000000000) {
+                const billions = Math.floor(num / 1000000000);
+                result += convertThreeDigits(billions) + ' billion';
+                num %= 1000000000;
+                if (num > 0) {
+                    result += (num < 100) ? ' and ' : ' ';
+                }
+            }
+            
+            // Handle millions
+            if (num >= 1000000) {
+                const millions = Math.floor(num / 1000000);
+                result += convertThreeDigits(millions) + ' million';
+                num %= 1000000;
+                if (num > 0) {
+                    result += (num < 100) ? ' and ' : ' ';
+                }
+            }
+            
+            // Handle thousands
+            if (num >= 1000) {
+                const thousands = Math.floor(num / 1000);
+                result += convertThreeDigits(thousands) + ' thousand';
+                num %= 1000;
+                if (num > 0) {
+                    result += (num < 100) ? ' and ' : ' ';
+                }
+            }
+            
+            // Handle remaining hundreds, tens, and ones
+            if (num > 0) {
+                result += convertThreeDigits(num);
+            }
+            
+            // Capitalize first letter
+            result = result.trim();
+            return result.charAt(0).toUpperCase() + result.slice(1);
+        }
+
+        // Convert number to Chinese characters
+        function numberToChinese(num) {
+            const digits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+            
+            if (num === 0) return '零';
+            
+            function convertFourDigits(n) {
+                let result = '';
+                let thousands = Math.floor(n / 1000);
+                let hundreds = Math.floor((n % 1000) / 100);
+                let tens = Math.floor((n % 100) / 10);
+                let ones = n % 10;
+                
+                if (thousands > 0) {
+                    result += digits[thousands] + '千';
+                    if (hundreds === 0 && (tens > 0 || ones > 0)) {
+                        result += '零';
+                    }
+                }
+                
+                if (hundreds > 0) {
+                    result += digits[hundreds] + '百';
+                    if (tens === 0 && ones > 0) {
+                        result += '零';
+                    }
+                }
+                
+                if (tens > 0) {
+                    if (tens === 1 && thousands === 0 && hundreds === 0) {
+                        result += '十';
+                    } else {
+                        result += digits[tens] + '十';
+                    }
+                } else if ((thousands > 0 || hundreds > 0) && ones > 0) {
+                    result += '零';
+                }
+                
+                if (ones > 0) {
+                    result += digits[ones];
+                }
+                
+                return result;
+            }
+            
+            let result = '';
+            
+            if (num >= 10000) {
+                let wan = Math.floor(num / 10000);
+                result += convertFourDigits(wan) + '萬';
+                num %= 10000;
+                
+                if (num > 0 && num < 1000) {
+                    result += '零';
+                }
+            }
+            
+            if (num > 0) {
+                result += convertFourDigits(num);
+            }
+            
+            return result;
+        }
+
         // Format text for better TTS pronunciation
         function formatTextForTTS(text, voiceId) {
             let formattedText = text;
             
-            // Format 8 consecutive numbers (phone numbers) with dashes - only for English voices
-            if (voiceId && voiceId.includes('English')) {
+            const isEnglishVoice = voiceId && voiceId.includes('English');
+            
+            if (isEnglishVoice) {
+                // For English voices: Format 8-digit numbers with dashes
                 formattedText = formattedText.replace(/\b(\d{8})\b/g, function(match) {
                     return match.split('').join('-');
                 });
+                
+                // For English voices: Format acronyms with dots
+                formattedText = formattedText.replace(/\b([A-Z]{2,})\b/g, function(match) {
+                    return match.split('').join('.');
+                });
+            } else {
+                // For Chinese voices: Leave 8-digit numbers as they are (no dash formatting)
+                // For Chinese voices: Don't add dots to acronyms (Chinese TTS can't handle it well)
+                
+                // Convert 6-7 digit numbers to Chinese characters
+                formattedText = formattedText.replace(/\b(\d{6,7})\b/g, function(match) {
+                    const num = parseInt(match);
+                    if (!isNaN(num)) {
+                        return numberToChinese(num);
+                    }
+                    return match;
+                });
+                
+                // Fix punctuation issues for Chinese voices
+                // Replace problematic punctuation with Chinese-compatible alternatives
+                formattedText = formattedText.replace(/\./g, '。');  // Replace . with Chinese period
+                formattedText = formattedText.replace(/\?/g, '？');  // Replace ? with Chinese question mark
+                formattedText = formattedText.replace(/!/g, '！');   // Replace ! with Chinese exclamation mark
             }
-            
-            // Format consecutive uppercase letters (acronyms) with dots
-            formattedText = formattedText.replace(/\b([A-Z]{2,})\b/g, function(match) {
-                return match.split('').join('.');
-            });
             
             return formattedText;
         }
@@ -843,10 +1002,7 @@
 
             showLoading();
 
-            // Format text for better TTS pronunciation
-            text = formatTextForTTS(text, voice_id);
-
-            // Check if translation is needed and translate if necessary
+            // Check if translation is needed and translate if necessary FIRST
             try {
                 if (needsTranslation(text, voice_id)) {
                     const isEnglishVoice = voice_id.includes('English');
@@ -864,6 +1020,9 @@
                 console.error('Translation failed:', error);
                 // Continue with original text if translation fails
             }
+
+            // Format text for better TTS pronunciation AFTER translation
+            text = formatTextForTTS(text, voice_id);
 
             const url = `https://api.minimaxi.chat/v1/t2a_v2?GroupId=${group_id}`;
             const payload = {
@@ -956,7 +1115,3 @@
     </script>
 </body>
 </html>
-
-
-
-
