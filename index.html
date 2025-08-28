@@ -612,6 +612,25 @@
                    (textLanguage === 'english' && isChineseVoice);
         }
 
+        // Format text for better TTS pronunciation
+        function formatTextForTTS(text, voiceId) {
+            let formattedText = text;
+            
+            // Format 8 consecutive numbers (phone numbers) with dashes - only for English voices
+            if (voiceId && voiceId.includes('English')) {
+                formattedText = formattedText.replace(/\b(\d{8})\b/g, function(match) {
+                    return match.split('').join('-');
+                });
+            }
+            
+            // Format consecutive uppercase letters (acronyms) with dots
+            formattedText = formattedText.replace(/\b([A-Z]{2,})\b/g, function(match) {
+                return match.split('').join('.');
+            });
+            
+            return formattedText;
+        }
+
         // Initialize waveform
         function initializeWaveform() {
             const waveform = document.getElementById('waveform');
@@ -656,6 +675,9 @@
             } else {
                 sampleText = 'hello'; // Default English
             }
+
+            // Format sample text for better TTS pronunciation
+            sampleText = formatTextForTTS(sampleText, voice_id);
 
             const group_id = '1942475203674116903';
             const api_key = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJHcm91cE5hbWUiOiJEIEQiLCJVc2VyTmFtZSI6IkQgRCIsIkFjY291bnQiOiIiLCJTdWJqZWN0SUQiOiIxOTQyNDc1MjAzNjc4MzExMjA3IiwiUGhvbmUiOiIiLCJHcm91cElEIjoiMTk0MjQ3NTIwMzY3NDExNjkwMyIsIlBhZ2VOYW1lIjoiIiwiTWFpbCI6Imlubm92YXRpb24yMDIyMDZAZ21haWwuY29tIiwiQ3JlYXRlVGltZSI6IjIwMjUtMDctMjMgMTU6MDE6NDIiLCJUb2tlblR5cGUiOjEsImlzcyI6Im1pbmltYXgifQ.GvEHiYOKSYtw7ASh923DBeK1jhiXrTf_ZHpbh_XS7FdiaQBiLbUJ8SXWlW3jvUTASyU3fA8mBaF9Xqf8Uon0yzwm0-uG2kU9sPaL22sPJ2HMlcskTwXN3c-dYtBQSL7XwHUyFliM5mDw6cwBEbuiEio_MLde4eLNBGUATNMMorb2kBIPu3K5Qcsrl5ZWNx03lS0LmdirHDdJmc0ZonWD7eyQTLXvIFtTeY1BMZmny65vFtQH8WoCf26U0iJ73JgqKrqcWrkhad4TSJ2ZdLegfHWme_X1K3pnAbFvmAPMhv_yi0vTXxH_n8Y4-Dy4wORPj1PXr9H5_bHwV9iqnW5tYA';
@@ -821,6 +843,9 @@
 
             showLoading();
 
+            // Format text for better TTS pronunciation
+            text = formatTextForTTS(text, voice_id);
+
             // Check if translation is needed and translate if necessary
             try {
                 if (needsTranslation(text, voice_id)) {
@@ -931,6 +956,7 @@
     </script>
 </body>
 </html>
+
 
 
 
