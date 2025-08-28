@@ -758,6 +758,10 @@
             const isEnglishVoice = voiceId && voiceId.includes('English');
             
             if (isEnglishVoice) {
+                // For English voices: Replace dashes in time ranges with "to"
+                // Pattern matches: 9am - 1pm, 2:30pm - 5:00pm, etc.
+                formattedText = formattedText.replace(/(\d{1,2}(?::\d{2})?(?:am|pm))\s*-\s*(\d{1,2}(?::\d{2})?(?:am|pm))/gi, '$1 to $2');
+                
                 // For English voices: Format 8-digit numbers with dashes
                 formattedText = formattedText.replace(/\b(\d{8})\b/g, function(match) {
                     return match.split('').join('-');
